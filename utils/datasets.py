@@ -493,15 +493,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     if len(l):
                         assert (l >= 0).all(), 'negative labels'
                         if kpt_label:
-                            assert l.shape[1] == kpt_label*3 + 5, 'labels require {} columns each'.format(kpt_label*3+5)
-                            assert (l[:, 5::3] <= 1).all(), 'non-normalized or out of bounds coordinate labels'
-                            assert (l[:, 6::3] <= 1).all(), 'non-normalized or out of bounds coordinate labels'
-                            # print("l shape", l.shape)
-                            kpts = np.zeros((l.shape[0], kpt_label*2+5))
-                            for i in range(len(l)):
-                                kpt = np.delete(l[i,5:], np.arange(2, l.shape[1]-5, 3))  #remove the occlusion paramater from the GT
-                                kpts[i] = np.hstack((l[i, :5], kpt))
-                            l = kpts
+                            if l.shape[1] > kpt_label*2+5:
+                                assert l.shape[1] == kpt_label*3 + 5, 'labels require {} columns each'.format(kpt_label*3+5)
+                                assert (l[:, 5::3] <= 1).all(), 'non-normalized or out of bounds coordinate labels'
+                                assert (l[:, 6::3] <= 1).all(), 'non-normalized or out of bounds coordinate labels'
+                                # print("l shape", l.shape)
+                                kpts = np.zeros((l.shape[0], kpt_label*2+5))
+                                for i in range(len(l)):
+                                    kpt = np.delete(l[i,5:], np.arange(2, l.shape[1]-5, 3))  #remove the occlusion paramater from the GT
+                                    kpts[i] = np.hstack((l[i, :5], kpt))
+                                l = kpts
                             assert l.shape[1] == kpt_label*2+5, 'labels require {} columns each after removing occlusion paramater'.format(kpt_label*2+5)
                         else:
                             assert l.shape[1] == 5, 'labels require 5 columns each'
